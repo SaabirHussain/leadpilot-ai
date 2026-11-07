@@ -3,10 +3,10 @@
 ## Mobile navigation and demo-personalization fixes
 
 Customer archive: `distribution/dist/LeadPilot-AI-v1.0.0.zip`, **74 files,
-470,768 bytes**. Marketing assets remain excluded.
+471,316 bytes**. Marketing assets remain excluded.
 
 ```text
-SHA256: 3cf2b1c5fcef502949f81f5ec1ab976d2cdd8246a45611ff8c3b01b8ad1ce500
+SHA256: 525d97b7093f717b09b770d1f080c35a1c2818478264b0570bfcb4fb11afe148
 
 pytest -q backend/tests
 47 passed, 1 skipped, 1 warning in 8.99s
