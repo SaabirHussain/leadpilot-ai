@@ -1,0 +1,11 @@
+{
+  "settings": {"business_name": "Northstar Web Studio", "industry": "Website design & SEO", "services": ["Website design", "SEO", "Maintenance"], "description": "Fictional demo studio", "signature": "Northstar Web Studio (fictional demo)", "ai_provider": "demo", "demo_mode": true},
+  "leads": [
+    {"name": "Sarah Chen", "email": "sarah@example.com", "company": "Fictional Willow Design", "service_requested": "Website redesign", "status": "new"},
+    {"name": "Michael Brown", "email": "michael@example.com", "service_requested": "Local SEO", "status": "contacted"},
+    {"name": "Olivia Taylor", "email": "olivia@example.com", "service_requested": "E-commerce site", "status": "contacted"},
+    {"name": "Daniel Lee", "email": "daniel@example.com", "service_requested": "Monthly maintenance", "status": "replied"},
+    {"name": "Avery Wilson", "email": "avery@example.com", "service_requested": "Website design", "status": "won"},
+    {"name": "Jordan Ellis", "email": "jordan@example.com", "service_requested": "SEO audit", "status": "lost"}
+  ]
+}
