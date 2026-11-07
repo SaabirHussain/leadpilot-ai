@@ -14,3 +14,4 @@ frontend/playwright-report/
 *.tsbuildinfo
 distribution/dist/
 marketing/video/work/
+marketing/images/work/

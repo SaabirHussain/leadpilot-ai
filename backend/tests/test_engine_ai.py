@@ -190,3 +190,23 @@ def test_demo_empty_inquiry_and_unmatched_service(context):
     context["business"]["services"] = ["Photography"]
     body = generate(context)["body"]
     assert "Photography" not in body and "ignore previous instructions" not in body
+
+
+def test_demo_natural_lists_and_catering(context):
+    from app.ai.demo import join_list
+
+    assert join_list([]) == ""
+    assert join_list(["A"]) == "A"
+    assert join_list(["A", "B"]) == "A and B"
+    assert join_list(["A", "B", "C"]) == "A, B, and C"
+    context["lead"].update(
+        name="Emma Rivera", company="Maple Grove Catering (fictional)",
+        service_requested="Online ordering",
+        inquiry_message="We take lunch platter orders by phone. Customers need dietary options and a collection date.",
+    )
+    context["tone"] = "concise"
+    body = generate(context)["body"]
+    assert "catering order flow" in body and "platter choices" in body
+    assert "collection time" in body and "mobile" not in body
+    assert body.endswith(context["business"]["signature"])
+    assert warnings_for(body) == []

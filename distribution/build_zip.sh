@@ -23,7 +23,7 @@ excluded = {'.git', '.env', '.spec.txt', '.venv', 'node_modules', 'data', '__pyc
 files = []
 for name in tracked:
     path = pathlib.PurePosixPath(name)
-    if not name or excluded.intersection(path.parts) or name.startswith('distribution/dist/'):
+    if not name or excluded.intersection(path.parts) or name.startswith(('distribution/dist/', 'marketing/')):
         continue
     if name.endswith(('.pyc', '.tsbuildinfo')):
         continue

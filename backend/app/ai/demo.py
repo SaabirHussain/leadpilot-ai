@@ -5,13 +5,13 @@ import re
 TOPICS = [
     (
         r"online order|ordering|e-commerce|online store|shipping|checkout",
-        "online ordering and a clear checkout or pickup flow",
+        "online ordering with a clear checkout or pickup flow",
         "Which ordering or inventory tools do you use today?",
         "Mapping product options and pickup or shipping choices is a useful starting point.",
         r"order|commerce|store",
     ),
     (
-        r"mobile|phones?|slow|image sizes",
+        r"mobile|on (?:a )?phone|slow|image sizes",
         "a site that is easier to use on mobile",
         "Which page causes the most difficulty for customers on a phone?",
         "A short list of the pages customers use most can help focus a mobile review.",
@@ -49,13 +49,25 @@ TOPICS = [
 
 
 def join_list(items):
-    return ", ".join(items[:-1]) + " and " + items[-1] if len(items) > 1 else items[0]
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    return ", ".join(items[:-1]) + (", and " if len(items) > 2 else " and ") + items[-1]
 
 
 def generate_demo(context):
     lead, business = context["lead"], context["business"]
     text = lead.get("service_requested", "") + " " + lead.get("inquiry_message", "")
     topics = [item for item in TOPICS if re.search(item[0], text, re.I)][:2]
+    if re.search(r"cater|platter", text, re.I):
+        topics = [(
+            r"cater|platter",
+            "an online catering order flow for platter choices, guest counts, and collection times",
+            "How should customers choose platter options and specify their collection time?",
+            "Mapping platter options, guest counts, and collection slots can help clarify the order form.",
+            r"order|commerce|store",
+        )]
     if topics:
         need = join_list([item[1] for item in topics])
         questions = [item[2] for item in topics]

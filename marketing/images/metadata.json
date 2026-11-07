@@ -1,0 +1,42 @@
+{
+  "screenshot-dashboard.png": {
+    "width": 1920,
+    "height": 1080,
+    "bytes": 196278
+  },
+  "screenshot-lead-detail.png": {
+    "width": 2560,
+    "height": 2400,
+    "bytes": 263207
+  },
+  "screenshot-ai-draft.png": {
+    "width": 2560,
+    "height": 2406,
+    "bytes": 292922
+  },
+  "screenshot-reminders.png": {
+    "width": 2560,
+    "height": 2000,
+    "bytes": 220044
+  },
+  "screenshot-dark-mode.png": {
+    "width": 1920,
+    "height": 1080,
+    "bytes": 195992
+  },
+  "screenshot-mobile.png": {
+    "width": 780,
+    "height": 1688,
+    "bytes": 89744
+  },
+  "cover.png": {
+    "width": 1280,
+    "height": 720,
+    "bytes": 230413
+  },
+  "feature-overview.png": {
+    "width": 1600,
+    "height": 1200,
+    "bytes": 88686
+  }
+}

@@ -1,5 +1,72 @@
 # Release 1.0.0 test results
 
+## Final marketing refresh and native package verification
+
+Final archive: `distribution/dist/LeadPilot-AI-v1.0.0.zip`, **74 files,
+469,541 bytes**. No marketing assets are included.
+
+```text
+SHA256: d31d2ca2e03138ca3ddfd31c8f6a486a8bc482f4d804c2d696bd2b034a00ffca
+Final archive matches smoke-tested extraction: 73/73 non-report files identical;
+only TEST_RESULTS.md updated.
+```
+
+The final refresh adds catering-specific Demo wording, natural list joining,
+corrects the filmed edit/signature order and end-card layout, and adds eight
+reproducible marketing images. All marketing assets are excluded from the customer
+ZIP, including tracked video outputs and scripts.
+
+```text
+pytest -q backend/tests
+40 passed, 1 skipped, 1 warning in 8.47s
+
+ruff check backend scripts/launch.py marketing/video/render.py
+All checks passed!
+
+npm run build (distribution builder)
+✓ 1599 modules transformed.
+✓ built in 1.82s
+
+npm run lint
+> eslint .
+(exit 0, no errors)
+
+E2E_BASE_URL=http://127.0.0.1:8008 npm run test:e2e
+1 passed (16.8s)
+```
+
+The normal E2E command first found port 8000 already occupied. Rather than reuse
+or stop that workspace, the full smoke suite was run against the freshly extracted
+native customer kit at `/home/ubuntu/lp-final-kit-Ztc2Rf`, launched using its own
+`./scripts/start.sh`, `PORT=8008`, and `LEADPILOT_NO_BROWSER=1`. Its new .venv and
+data directory were created inside the extraction, not shared with the repo.
+
+```text
+Health: {"ok":true,"version":"1.0.0"}
+Fresh auth: {"setup_required":true,"authenticated":false}
+```
+
+The smoke exercised onboarding/demo, draft editing/copy/mark-sent, reminders,
+deep-link/login preservation, light/dark themes, and mobile. The final archive's
+non-report files are compared with this smoke-tested extraction after packaging;
+the report alone is updated to include completed verification results. The final
+archive checksum is recorded in the repository copy of this report after building,
+not embedded in the ZIP's own report (which would change that checksum).
+
+Video render completed with exit 0. All 30 five-second sample frames and additional
+title/edit/end-card frames were visually reviewed. All three videos are silent
+H.264/yuv420p at 30fps: 82.5s and 30s landscape, 36s dedicated responsive vertical.
+No black intervals >=0.1s were found. Evidence: `/home/ubuntu/lp-frames/` and
+`/home/ubuntu/lp-frames/final-review/`. All eight marketing PNGs were viewed; the
+lead-detail capture was enlarged to clear its bottom CTA. Exact image dimensions
+are in `marketing/images/metadata.json`.
+
+The optional live AI test remains skipped. Existing Starlette/AnyIO deprecation,
+seven moderate npm findings, and the ESLint support warning remain. No paid API
+calls or actual email sends occurred. Docker, Windows, macOS, Safari, paid-provider
+connectivity, and social-platform uploads were not rerun in this refresh. The
+sections below retain the earlier Milestone 4 verification as historical evidence.
+
 ## Environment and automated checks
 
 Ubuntu Linux VM, native Python 3.10.12; Docker Engine 29.9.2, Compose v5.6.1.
