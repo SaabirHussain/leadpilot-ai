@@ -1,6 +1,6 @@
 # Gumroad listing — LeadPilot AI (draft for seller review)
 
-> Review every line before publishing. Replace `[Your Business Name]`, confirm the refund
+> Review every line before publishing. Confirm the refund
 > policy, and have the LICENSE reviewed. Do not add testimonials or results you don't have.
 
 ## Product title
