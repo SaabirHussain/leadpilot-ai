@@ -1,64 +1,72 @@
 # LeadPilot AI — AI Lead Follow-Up Kit
 
-Local-first lead management and human-reviewed email drafts, with a responsive React
-workspace. Milestones 1–3 are implemented; commercial packaging is not included yet.
-LeadPilot never sends email.
+A local single-owner workspace for leads, human-reviewed email drafts and follow-up
+reminders. **It never sends email automatically.** Gmail transport and bulk sending
+are not included. Real provider adapters, fictional demo mode, CSV import/export,
+privacy controls and responsive light/dark UI are implemented.
 
-## Run (Python 3.10+)
+## Buyers
 
-Build the frontend first (Node.js 22+):
+Extract the customer ZIP, then read [README-FIRST.txt](README-FIRST.txt) and
+[Quick Start](docs/QUICK_START.md). The ZIP includes the prebuilt interface, so native
+installation needs Python 3.10+, not Node. Docker is an alternative. Initial
+dependency/image installation needs internet. Protect local data and backups.
+
+- [Setup guide](docs/SETUP_GUIDE.md) / [Features and exclusions](docs/FEATURES.md)
+- [Troubleshooting and password reset](docs/TROUBLESHOOTING.md)
+- [Privacy and security](docs/PRIVACY_SECURITY.md)
+- [Local Ollama](docs/LOCAL_AI.md) / [Actual model results](docs/LIVE_AI_VERIFICATION.md)
+- [Test results and untested platforms](docs/TEST_RESULTS.md)
+
+External AI usage is billed by its provider. Demo drafts make no provider calls;
+small local models can be slow and unreliable. Review every draft. LICENSE is a
+**commercial single-business draft requiring legal review before sale**. Upstream
+licenses are in THIRD_PARTY_NOTICES.md.
+
+## Developers
+
+Python 3.10+, Node 20+, npm and Git. From the repository root:
 
 ```sh
+python3 -m venv .venv
+.venv/bin/pip install -r backend/requirements-dev.txt
 cd frontend
 npm ci
 npm run build
 cd ..
+./scripts/start.sh
 ```
+
+For separate frontend development run `npm run dev` from frontend/ alongside the
+backend (`cd backend && ../.venv/bin/python -m app`). Vite proxies /api to :8000.
+FastAPI serves the built SPA/API on one port. Fonts/icons are bundled, with no CDN.
+[API contract](docs/API.md), interactive /docs, [architecture](docs/ARCHITECTURE.md).
+
+Native environment variables come from the process, not an auto-loaded .env.
+Launchers set absolute DATA_DIR and FRONTEND_DIST paths inside the extracted folder.
+Compose optionally reads .env (2.24+) and fixes container paths. Native bind and
+Docker published port default to localhost. Do not expose publicly without a
+reviewed HTTPS reverse proxy and access controls.
+
+## Checks and distribution
 
 ```sh
-python3 -m venv .venv
-.venv/bin/pip install -r backend/requirements.txt
-cd backend
-../.venv/bin/python -m app
+.venv/bin/pytest -q backend/tests
+.venv/bin/ruff check backend scripts/launch.py
+cd frontend
+npm run build
+npm run lint
+npx playwright install chromium
+npm run test:e2e
 ```
 
-Server defaults to http://127.0.0.1:8000. OpenAPI documentation is at `/docs`.
-Open the server URL in your browser to create your owner account and follow the setup
-wizard. All mutations except the bearer-token webhook require
-`X-Requested-With: LeadPilot`. See [API](docs/API.md).
+The smoke test starts a fresh backend unless E2E_BASE_URL is set. For a **fresh**
+Docker install: `E2E_BASE_URL=http://127.0.0.1:8000 npm run test:e2e`. It creates
+an account/demo records: never point it at buyer data. Screenshots default to
+~/lp-shots (SCREENSHOT_DIR overrides). Live-provider tests are skipped unless
+explicitly enabled; see LOCAL_AI.md.
 
-For frontend development run `npm run dev` from `frontend/` alongside the backend;
-Vite proxies `/api` to localhost:8000. Inter font files and icons are bundled, with no CDN.
-
-Environment variables are read from the process environment (not automatically from `.env`).
-See `.env.example`. Paths are relative to the server's working directory.
-Back up the entire DATA_DIR with the server stopped. SQLite, secrets and lead data stay local
-unless a configured AI provider is invoked or you export them. Protect this directory and
-exports: data is not encrypted at rest. Use demo mode for zero-network drafts. External
-providers can charge usage fees and receive lead context. No paid calls were used in testing.
-Local Ollama can use the OpenAI-compatible adapter without a key.
-
-For Anthropic set provider `anthropic`, base URL `https://api.anthropic.com/v1`, a valid
-model and your own key. For OpenAI-compatible services set the matching `/v1` base URL.
-Never expose this service publicly without HTTPS, secure cookies and a reverse proxy.
-The initial release targets one local owner, one server process.
-
-## Checks
-
-For an optional free, local AI provider, see [Ollama setup](docs/LOCAL_AI.md).
-
-```sh
-cd backend
-../.venv/bin/pytest -q
-../.venv/bin/ruff check .
-```
-
-From `frontend/`: `npm run build`, `npm run lint`, and `npm run test:e2e`.
-Install Chromium once with `npx playwright install chromium`. The smoke test starts the
-built app with a fresh DATA_DIR under `~/lp-e2e/` and captures pages in `~/lp-shots/`
-(override screenshots with `SCREENSHOT_DIR`). Port 8000 must be available. The test
-uses fictional demo records and does not send email or invoke a paid provider.
-
-Tests use temporary storage and mocked provider HTTP transports. No real email integration exists.
-Demo seed: `demo/seed.json`. Loading demo settings replaces business settings; deleting demo
-data removes only demo leads and their associated records, not the business settings.
+Stage intended source files, then run `./distribution/build_zip.sh`. It builds
+the interface, packages only Git-tracked source files plus frontend/dist, excludes
+local data/secrets/caches and prints its file list/size. The ZIP is ignored under
+distribution/dist/. No Docker image, Python runtime or node_modules is bundled.

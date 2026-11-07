@@ -13,6 +13,8 @@ import { SettingsFields, settingTabs } from "./settings";
 import { Modal, PageTitle } from "./ui";
 export function SettingsPage({ logout }: { logout: () => void }) {
   const { settings, notify, refresh } = useWorkspace();
+  const [appVersion, setAppVersion] = useState("");
+  useEffect(() => { api<{version: string}>("/health").then(data => setAppVersion(data.version)).catch(() => {}); }, []);
   const [tab, setTab] = useState(0),
     [value, setValue] = useState<Settings>(settings),
     [busy, setBusy] = useState(false),
@@ -245,9 +247,9 @@ export function SettingsPage({ logout }: { logout: () => void }) {
                   Sign out
                 </button>
                 <p className="hint">
-                  To change owner credentials, export and back up your data
-                  before resetting the workspace.
+                  To reset a forgotten password, use the local reset-password CLI described in Troubleshooting.
                 </p>
+                <p className="hint" data-testid="app-version">LeadPilot AI · Version {appVersion || "unavailable"}</p>
               </>
             )}
           </div>

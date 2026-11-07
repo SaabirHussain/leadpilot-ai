@@ -23,7 +23,7 @@ from sqlalchemy import create_engine, delete, event, func, or_, select
 from sqlalchemy.orm import sessionmaker
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import ai
+from . import __version__, ai
 from .followups import TERMINAL, calculate_due, cancel_pending, contacted, sweep
 from .models import (
     Activity,
@@ -72,7 +72,8 @@ def serialize(obj):
 
 def private_write(path, value):
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    os.fchmod(fd, 0o600)
+    if hasattr(os, "fchmod"):
+        os.fchmod(fd, 0o600)
     with os.fdopen(fd, "w") as handle:
         handle.write(value)
 
@@ -124,7 +125,7 @@ def create_app(data_dir=None, background=None):
                 await task
         engine.dispose()
 
-    app = FastAPI(title="LeadPilot AI", lifespan=lifespan)
+    app = FastAPI(title="LeadPilot AI", version=__version__, lifespan=lifespan)
     app.state.sessions = sessions
     failures = {}
 
@@ -157,7 +158,7 @@ def create_app(data_dir=None, background=None):
                     {"error": {"code": 403, "message": "X-Requested-With: LeadPilot required"}},
                     status_code=403,
                 )
-            public = path in {"/api/auth/status", "/api/auth/setup", "/api/auth/login"}
+            public = path in {"/api/health", "/api/auth/status", "/api/auth/setup", "/api/auth/login"}
             if not public and not inbound and not authenticated(request):
                 return JSONResponse(
                     {"error": {"code": 401, "message": "Authentication required"}}, status_code=401
@@ -300,7 +301,10 @@ def create_app(data_dir=None, background=None):
     def ai_call(db, lead, kind, tone, followup_step=None):
         settings = db.get(BusinessSettings, 1)
         context = {
-            "lead": {key: getattr(lead, key) for key in CSV_FIELDS if key != "status"},
+            "lead": {
+                key: getattr(lead, key)
+                for key in ["name", "company", "service_requested", "inquiry_message", "notes"]
+            },
             "business": {
                 key: getattr(settings, key)
                 for key in ["business_name", "industry", "services", "description", "signature"]
@@ -651,6 +655,10 @@ def create_app(data_dir=None, background=None):
             if bucket != "upcoming" or lead.next_follow_up_at <= now() + timedelta(days=7):
                 result[bucket].append(serialize(lead))
         return result
+
+    @app.get("/api/health")
+    def health():
+        return {"ok": True, "version": __version__}
 
     @app.get("/api/activity")
     def activity_list(db=Depends(db_session)):

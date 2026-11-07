@@ -1,7 +1,12 @@
 # Frontend API contract
 
-Base `/api`. All dates are ISO-8601 UTC ending `Z`. All routes except auth status/setup/login
-and inbound lead require the session cookie. Use `credentials: 'same-origin'` and send
+Public `GET /api/health` returns `{ "ok": true, "version": "1.0.0" }`, sourced from
+`app.__version__`. This checks process readiness, not AI or database integrity.
+Password recovery is a local CLI operation (`python -m app reset-password`), not an
+unauthenticated endpoint.
+
+Base `/api`. All dates are ISO-8601 UTC ending `Z`. All routes except auth status/setup/login,
+health and inbound lead require the session cookie. Use `credentials: 'same-origin'` and send
 `X-Requested-With: LeadPilot` on POST/PATCH/DELETE (also setup/login). Do not send that
 header for third-party inbound forms; use server-to-server bearer authentication.
 

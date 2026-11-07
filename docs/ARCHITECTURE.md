@@ -1,4 +1,18 @@
-# Backend architecture (milestones 1–2)
+# Architecture
+
+## Stack decision and distribution
+
+SQLite avoids a separate database service for a single-owner local workspace. FastAPI
+serves API and SPA from one process/port, avoiding a second server and cross-origin
+credential setup. This is not a multi-tenant or multi-worker design. Docker builds
+with Node 20 and runs Python 3.12 as UID 10001. The customer ZIP includes prebuilt
+frontend/dist for native Python 3.10+ installs without Node. Launcher paths resolve
+from the extracted kit. Version lives in backend/app/__init__.py, is returned by public
+/api/health, and appears in Account settings. The local reset-password CLI changes
+only the owner hash, invalidating sessions while retaining data. Auth bootstrap waits
+for settings before routing; login preserves an internal next URL.
+
+## Backend
 
 Python 3.10, FastAPI and SQLAlchemy 2 run as a single local process. SQLite uses
 foreign-key cascades for lead deletion. `create_all` plus a schema-version row initializes
@@ -57,5 +71,6 @@ Escape handling, labelled controls and reduced-motion styling support keyboard a
 Desktop tables become mobile lead cards. The Playwright smoke test starts a fresh backend
 serving the built dist and covers setup through recording a personally sent draft.
 
-No deployment image, n8n workflow, Gmail transport, marketing assets or commercial license
-is delivered yet. This is not an autonomous outreach system.
+Docker/native launchers, a ZIP builder and commercial license draft are included.
+No n8n workflow, Gmail transport or marketing assets are delivered. This is not an
+autonomous outreach system. The license requires legal review before sale.

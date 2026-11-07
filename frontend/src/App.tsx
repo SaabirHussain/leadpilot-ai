@@ -81,8 +81,8 @@ export default function App() {
       setup_required: boolean;
       authenticated: boolean;
     }>("/auth/status");
-    setAuth(status);
     if (status.authenticated) setSettings(await api<Settings>("/settings"));
+    setAuth(status);
     setVersion((v) => v + 1);
   };
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function App() {
   };
   const done = async () => {
     await refresh();
-    navigate("/");
+    navigate(destination);
   };
   if (error)
     return (
@@ -145,6 +145,10 @@ export default function App() {
       : !settings.onboarding_complete
         ? "/setup"
         : null;
+  const next = new URLSearchParams(location.search).get("next");
+  const destination = next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") && Array.from(next).every(char => char.charCodeAt(0) >= 32) &&
+    !next.startsWith("/login") && !next.startsWith("/setup") ? next : "/";
+  const authDestination = `${protectedRoute}?next=${encodeURIComponent(location.pathname + location.search + location.hash)}`;
   const navigation = [
     ["/", "Overview", LayoutDashboard],
     ["/leads", "Leads", Users],
@@ -216,7 +220,7 @@ export default function App() {
             />
             <Route
               path="*"
-              element={<Navigate to={protectedRoute} replace />}
+              element={<Navigate to={authDestination} replace />}
             />
           </Routes>
           <button
@@ -298,7 +302,7 @@ export default function App() {
                   }
                 />
                 <Route path="/setup" element={<Navigate to="/" replace />} />
-                <Route path="/login" element={<Navigate to="/" replace />} />
+                <Route path="/login" element={<Navigate to={destination} replace />} />
                 <Route
                   path="*"
                   element={

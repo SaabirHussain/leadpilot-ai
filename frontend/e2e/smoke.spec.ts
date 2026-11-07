@@ -97,6 +97,18 @@ test("fresh workspace → thoughtful draft → follow-up, themes and mobile", as
   await expect(page.getByTestId("draft-body")).toContainText("");
   await expect(page.getByTestId("draft-body")).toHaveValue(/Sarah,/);
   await capture(page, "12-draft-editor");
+  const draftUrl = page.url();
+  await page.reload();
+  await expect(page.getByTestId("draft-body")).toHaveValue(/Sarah,/);
+  await expect(page).toHaveURL(draftUrl);
+  await page.context().clearCookies();
+  await page.reload();
+  await expect(page).toHaveURL(/login\?next=/);
+  await page.getByTestId("auth-email").fill("owner@example.com");
+  await page.getByTestId("auth-password").fill("LocalDemo123!");
+  await page.getByTestId("auth-submit").click();
+  await expect(page).toHaveURL(draftUrl);
+  await expect(page.getByTestId("draft-body")).toHaveValue(/Sarah,/);
   await page
     .getByTestId("draft-body")
     .fill(
@@ -157,6 +169,8 @@ test("fresh workspace → thoughtful draft → follow-up, themes and mobile", as
   await page.getByTestId("auth-email").fill("owner@example.com");
   await page.getByTestId("auth-password").fill("LocalDemo123!");
   await page.getByTestId("auth-submit").click();
+  await expect(page).toHaveURL(/settings/);
+  await page.getByRole("link", {name: "Overview", exact: true}).click();
   await expect(page.getByTestId("overdue-count")).toBeVisible();
   await page.getByTestId("simulate-inquiry").click();
   await expect(page.getByTestId("toast")).toContainText(

@@ -11,13 +11,13 @@ export default defineConfig({
   workers: 1,
   reporter: "list",
   use: {
-    baseURL: "http://127.0.0.1:8000",
+    baseURL: process.env.E2E_BASE_URL || "http://127.0.0.1:8000",
     viewport: { width: 1440, height: 900 },
     permissions: ["clipboard-read", "clipboard-write"],
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  webServer: {
+  webServer: process.env.E2E_BASE_URL ? undefined : {
     command:
       "../.venv/bin/python -m uvicorn app.main:app --app-dir ../backend --host 127.0.0.1 --port 8000 --no-access-log",
     url: "http://127.0.0.1:8000/api/auth/status",
