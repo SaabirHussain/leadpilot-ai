@@ -1,0 +1,3 @@
+name,company,email,phone,service_requested,inquiry_message,notes,status
+Sarah Example,Fictional Bakery,sarah@example.com,555-0101,Website redesign,"Our fictional bakery site is slow on mobile. We would like a clearer menu.",Fictional example only,new
+Michael Example,Fictional Bicycle Shop,michael@example.com,555-0102,Local SEO,"Our fictional shop moved. We need help reviewing old address listings.",Fictional example only,contacted

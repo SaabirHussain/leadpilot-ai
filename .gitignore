@@ -1,0 +1,17 @@
+.spec.txt
+.env
+data/
+**/data/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+*.tsbuildinfo
+distribution/dist/
+marketing/video/work/
+marketing/images/work/

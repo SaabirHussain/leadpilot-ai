@@ -1,0 +1,189 @@
+import re
+
+
+# Fixed snippets acknowledge topics without copying untrusted instructions into the reply.
+TOPICS = [
+    (
+        r"online order|ordering|e-commerce|online store|shipping|checkout",
+        "online ordering with a clear checkout or pickup flow",
+        "Which ordering or inventory tools do you use today?",
+        "Mapping product options and pickup or shipping choices is a useful starting point.",
+        r"order|commerce|store",
+    ),
+    (
+        r"mobile|on (?:a )?phone|slow|image sizes",
+        "a site that is easier to use on mobile",
+        "Which page causes the most difficulty for customers on a phone?",
+        "A short list of the pages customers use most can help focus a mobile review.",
+        r"mobile|redesign|website design",
+    ),
+    (
+        r"local seo|local search|business profile|old address|opening hours",
+        "accurate local search information for nearby customers",
+        "Do you have access to your business profile and current address listings?",
+        "Comparing your address, hours and service area across listings can help identify inconsistencies.",
+        r"local|seo",
+    ),
+    (
+        r"wordpress|maintenance|plugin|backup",
+        "website upkeep, updates and backups",
+        "How are website updates and backups handled currently?",
+        "An inventory of plugins and the most recent backup is useful context for a maintenance discussion.",
+        r"maintenance|care",
+    ),
+    (
+        r"booking|appointments?|reservations?|schedule|timetable|classes",
+        "a clearer path from browsing to booking",
+        "Which booking tool would you like to keep using?",
+        "Sketching the path from the class or service page to booking can highlight confusing steps.",
+        r"redesign|website design",
+    ),
+    (
+        r"seo|search|audit|google",
+        "making relevant pages easier to find in search",
+        "Which pages or services would you most like customers to find?",
+        "A list of priority pages and access to existing search reports can guide an SEO discussion.",
+        r"seo|search",
+    ),
+    (
+        r"accessib|screen reader|keyboard navigation|wcag",
+        "a more accessible website that is easier for everyone to use",
+        "Which accessibility barriers have customers reported, and are there particular pages to prioritize?",
+        "Reviewing keyboard navigation, text contrast, and image descriptions can help identify accessibility priorities.",
+        r"accessib|redesign|website design",
+    ),
+    (
+        r"speed|performance|load(?:ing)? time|fast(?:er)? website",
+        "improved website speed and loading performance",
+        "Which pages or tasks feel slow, and on which devices?",
+        "Checking the most-used pages and their image sizes can help focus a performance review.",
+        r"performance|mobile|redesign|website design",
+    ),
+    (
+        r"brand|logo|visual identity",
+        "a consistent visual identity for your website",
+        "Do you have existing brand guidelines or a logo you would like to keep?",
+        "Gathering existing logos, colors, and examples can help clarify the visual direction.",
+        r"brand|design|redesign",
+    ),
+    (
+        r"content|photos?|photograph|copywriting",
+        "clear website content with useful photos",
+        "Which text and photos are ready, and what still needs creating?",
+        "An inventory of existing text and photos can help plan the content work.",
+        r"content|design|redesign",
+    ),
+    (
+        r"hosting|domain|dns",
+        "a clear plan for your website hosting and domain",
+        "Who currently manages your hosting and domain, and what would you like to keep?",
+        "Confirming domain ownership and hosting access is a useful first planning step.",
+        r"host|maintenance|care|website design",
+    ),
+]
+
+
+def join_list(items):
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    return ", ".join(items[:-1]) + (", and " if len(items) > 2 else " and ") + items[-1]
+
+
+def generate_demo(context):
+    lead, business = context["lead"], context["business"]
+    text = lead.get("service_requested", "") + " " + lead.get("inquiry_message", "")
+    topics = [item for item in TOPICS if re.search(item[0], text, re.I)][:2]
+    if re.search(r"cater|platter", text, re.I):
+        topics = [(
+            r"cater|platter",
+            "an online catering order flow for platter choices, guest counts, and collection times",
+            "How should customers choose platter options and specify their collection time?",
+            "Mapping platter options, guest counts, and collection slots can help clarify the order form.",
+            r"order|commerce|store",
+        )]
+    if topics:
+        need = join_list([item[1] for item in topics])
+        questions = [item[2] for item in topics]
+        tip = topics[0][3]
+        services = []
+        for topic in topics:
+            match = next(
+                (
+                    service
+                    for service in business.get("services", [])
+                    if re.search(topic[4], service, re.I)
+                ),
+                None,
+            )
+            if match and match not in services:
+                services.append(match)
+    else:
+        need = lead.get("service_requested") or "your website project"
+        questions = ["What would you most like to change, and which existing tools need to stay?"]
+        tip = "A link to your current site and a short list of priorities can help frame a useful discussion."
+        services = [
+            service for service in business.get("services", []) if service.lower() in text.lower()
+        ][:2]
+    fit = (
+        f"This relates to our {join_list(services)} services at {business['business_name']}."
+        if services
+        else f"We can discuss whether {business['business_name']} is a good fit."
+    )
+    company = f" for {lead['company']}" if lead.get("company") else ""
+    business_types = [
+        (r"\bbakery\b", "bakery"), (r"\brestaurant\b", "restaurant"),
+        (r"\bdental|\bdentist", "dental practice"), (r"\bsalon\b", "salon"),
+        (r"\bcafe\b|\bcafé\b", "café"), (r"\byoga\b", "yoga studio"),
+        (r"\bshop\b", "shop"),
+    ]
+    business_type = next((label for pattern, label in business_types if re.search(pattern, text, re.I)), None)
+    if business_type and business_type not in lead.get("company", "").lower():
+        company += f" (your {business_type})" if company else f" for your {business_type}"
+    tone = context["tone"]
+    step = context.get("followup_step") or 1
+    if context["kind"] == "initial":
+        opening = {
+            "professional": f"Thank you for your inquiry{company}. I understand your priorities include {need}.",
+            "friendly": f"Thanks for telling us about your plans{company}! It sounds like you're looking at {need}.",
+            "concise": f"Thanks for your inquiry{company} about {need}.",
+        }[tone]
+        subject = f"Your {lead.get('service_requested') or 'website'} inquiry"
+    else:
+        openings = {
+            1: ("A gentle check-in", "I'm checking in on your inquiry"),
+            2: ("A planning idea", "I wanted to share a practical starting point"),
+            3: ("Closing the loop", "I'm closing the loop on this conversation for now"),
+        }
+        subject, intro = openings[min(step, 3)]
+        opening = f"{intro}{company}, regarding {need}."
+        if step == 2:
+            opening += " " + tip
+            questions = ["Would this be a useful starting point for your project?"]
+        elif step >= 3:
+            opening += " If this is no longer a priority, there is no need to reply. You're welcome to reconnect when it suits you."
+            return {
+                "subject": f"{subject} — {business['business_name']}",
+                "body": f"Hi {lead['name'].split()[0]},\n\n{opening}\n\n{business.get('signature', '')}",
+            }
+        elif tone == "friendly":
+            opening += " No rush if you're still considering your options."
+    if tone == "concise":
+        questions = questions[:1]
+        next_step = "If useful, reply with a time for a short call."
+    elif tone == "professional":
+        fit += " A brief outline of your existing setup and priorities would help us discuss scope without making assumptions."
+        next_step = "If helpful, we could discuss your priorities on a short call. Please reply with a convenient time, or continue by email if you prefer."
+    else:
+        next_step = "If you'd like, we could have a short call to talk through your ideas. Just send a time that works for you — staying on email is fine too."
+    greeting = "Dear" if tone == "professional" else "Hi"
+    return {
+        "subject": f"{subject} — {business['business_name']}",
+        "body": f"{greeting} {lead['name'].split()[0]},\n\n{opening}\n\n{fit}\n\n"
+        + " ".join(questions)
+        + "\n\n"
+        + next_step
+        + "\n\n"
+        + business.get("signature", ""),
+    }

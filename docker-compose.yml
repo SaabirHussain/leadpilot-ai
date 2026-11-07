@@ -1,0 +1,18 @@
+services:
+  leadpilot:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8000"
+      DATA_DIR: /data
+      FRONTEND_DIST: /app/frontend/dist
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - leadpilot_data:/data
+    restart: unless-stopped
+volumes:
+  leadpilot_data:

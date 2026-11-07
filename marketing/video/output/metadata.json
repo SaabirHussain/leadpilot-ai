@@ -1,0 +1,53 @@
+{
+  "leadpilot-promo-30s.mp4": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1920,
+        "height": 1080,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "30.000000",
+      "size": "3644399"
+    }
+  },
+  "leadpilot-demo-full.mp4": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1920,
+        "height": 1080,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "82.500000",
+      "size": "6930903"
+    }
+  },
+  "leadpilot-vertical-9x16.mp4": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1080,
+        "height": 1920,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "36.000000",
+      "size": "3712534"
+    }
+  }
+}
