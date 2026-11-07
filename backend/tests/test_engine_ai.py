@@ -138,7 +138,7 @@ def test_demo_personalization_and_steps():
         assert warnings_for(body) == []
     assert len(set(bodies.values())) == 3
     assert len(bodies["concise"]) < len(bodies["friendly"]) < len(bodies["professional"])
-    assert bodies["concise"].count("?") == 2  # one clarifying question + optional call
+    assert bodies["concise"].count("?") == 1
     context.update(kind="follow_up", tone="friendly")
     variants = []
     for step, phrase in [
@@ -150,6 +150,13 @@ def test_demo_personalization_and_steps():
         result = generate(context)
         assert phrase in result["body"]
         assert warnings_for(result["body"]) == []
+        assert result["body"].startswith("Hi Sarah,")
+        assert "; and" not in result["body"]
+        if step == 2:
+            assert result["body"].count("?") == 1
+            assert "Which ordering or inventory tools" not in result["body"]
+        elif step == 3:
+            assert "?" not in result["body"]
         variants.append(result["body"])
     assert len(set(variants)) == 3
     prompt = messages(context)[0]["content"]

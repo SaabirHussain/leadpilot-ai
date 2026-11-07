@@ -1,9 +1,19 @@
 # LeadPilot AI — AI Lead Follow-Up Kit
 
-Local-first lead management and human-reviewed email drafts. Backend milestones 1–2;
-the frontend and commercial packaging are not included yet. LeadPilot never sends email.
+Local-first lead management and human-reviewed email drafts, with a responsive React
+workspace. Milestones 1–3 are implemented; commercial packaging is not included yet.
+LeadPilot never sends email.
 
 ## Run (Python 3.10+)
+
+Build the frontend first (Node.js 22+):
+
+```sh
+cd frontend
+npm ci
+npm run build
+cd ..
+```
 
 ```sh
 python3 -m venv .venv
@@ -13,8 +23,12 @@ cd backend
 ```
 
 Server defaults to http://127.0.0.1:8000. OpenAPI documentation is at `/docs`.
-Create the owner through `/api/auth/setup`; all mutations except the bearer-token
-webhook require `X-Requested-With: LeadPilot`. See [API](docs/API.md).
+Open the server URL in your browser to create your owner account and follow the setup
+wizard. All mutations except the bearer-token webhook require
+`X-Requested-With: LeadPilot`. See [API](docs/API.md).
+
+For frontend development run `npm run dev` from `frontend/` alongside the backend;
+Vite proxies `/api` to localhost:8000. Inter font files and icons are bundled, with no CDN.
 
 Environment variables are read from the process environment (not automatically from `.env`).
 See `.env.example`. Paths are relative to the server's working directory.
@@ -36,6 +50,12 @@ cd backend
 ../.venv/bin/pytest -q
 ../.venv/bin/ruff check .
 ```
+
+From `frontend/`: `npm run build`, `npm run lint`, and `npm run test:e2e`.
+Install Chromium once with `npx playwright install chromium`. The smoke test starts the
+built app with a fresh DATA_DIR under `~/lp-e2e/` and captures pages in `~/lp-shots/`
+(override screenshots with `SCREENSHOT_DIR`). Port 8000 must be available. The test
+uses fictional demo records and does not send email or invoke a paid provider.
 
 Tests use temporary storage and mocked provider HTTP transports. No real email integration exists.
 Demo seed: `demo/seed.json`. Loading demo settings replaces business settings; deleting demo

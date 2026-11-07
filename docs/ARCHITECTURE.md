@@ -47,5 +47,14 @@ persisted simulation activities to retain the rotation across restarts. Demo dra
 topic snippets and matching configured services, three tones and step-specific follow-ups;
 they do not interpret arbitrary instructions in lead text or claim to have inspected a site.
 
-No frontend, deployment image, n8n workflow, Gmail transport, marketing assets or commercial
-license is delivered in this backend milestone. This is not an autonomous outreach system.
+The frontend uses React 18, TypeScript, Vite, Tailwind CSS 3 and React Router. It bundles
+Inter fonts and inline/lucide SVGs for offline use. Same-origin fetch includes credentials
+and the mutation CSRF header. Setup, dashboard, leads, draft editor, reminders, activity
+and settings use the backend API; no application secrets are placed in browser storage.
+Theme preference is persisted locally, initially following the system. Modal focus trapping,
+Escape handling, labelled controls and reduced-motion styling support keyboard access.
+Desktop tables become mobile lead cards. The Playwright smoke test starts a fresh backend
+serving the built dist and covers setup through recording a personally sent draft.
+
+No deployment image, n8n workflow, Gmail transport, marketing assets or commercial license
+is delivered yet. This is not an autonomous outreach system.

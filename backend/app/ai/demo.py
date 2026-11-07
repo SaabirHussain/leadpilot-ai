@@ -48,12 +48,16 @@ TOPICS = [
 ]
 
 
+def join_list(items):
+    return ", ".join(items[:-1]) + " and " + items[-1] if len(items) > 1 else items[0]
+
+
 def generate_demo(context):
     lead, business = context["lead"], context["business"]
     text = lead.get("service_requested", "") + " " + lead.get("inquiry_message", "")
     topics = [item for item in TOPICS if re.search(item[0], text, re.I)][:2]
     if topics:
-        need = "; and ".join(item[1] for item in topics)
+        need = join_list([item[1] for item in topics])
         questions = [item[2] for item in topics]
         tip = topics[0][3]
         services = []
@@ -76,7 +80,7 @@ def generate_demo(context):
             service for service in business.get("services", []) if service.lower() in text.lower()
         ][:2]
     fit = (
-        f"This relates to our {' and '.join(services)} services at {business['business_name']}."
+        f"This relates to our {join_list(services)} services at {business['business_name']}."
         if services
         else f"We can discuss whether {business['business_name']} is a good fit."
     )
@@ -100,13 +104,18 @@ def generate_demo(context):
         opening = f"{intro}{company}, regarding {need}."
         if step == 2:
             opening += " " + tip
+            questions = ["Would this be a useful starting point for your project?"]
         elif step >= 3:
             opening += " If this is no longer a priority, there is no need to reply. You're welcome to reconnect when it suits you."
+            return {
+                "subject": f"{subject} — {business['business_name']}",
+                "body": f"Hi {lead['name'].split()[0]},\n\n{opening}\n\n{business.get('signature', '')}",
+            }
         elif tone == "friendly":
             opening += " No rush if you're still considering your options."
     if tone == "concise":
         questions = questions[:1]
-        next_step = "Open to a short call? Reply with a time that suits you, if useful."
+        next_step = "If useful, reply with a time for a short call."
     elif tone == "professional":
         fit += " A brief outline of your existing setup and priorities would help us discuss scope without making assumptions."
         next_step = "If helpful, we could discuss your priorities on a short call. Please reply with a convenient time, or continue by email if you prefer."
@@ -115,7 +124,7 @@ def generate_demo(context):
     greeting = "Dear" if tone == "professional" else "Hi"
     return {
         "subject": f"{subject} — {business['business_name']}",
-        "body": f"{greeting} {lead['name']},\n\n{opening}\n\n{fit}\n\n"
+        "body": f"{greeting} {lead['name'].split()[0]},\n\n{opening}\n\n{fit}\n\n"
         + " ".join(questions)
         + "\n\n"
         + next_step

@@ -83,7 +83,7 @@ def test_leads(owner, lead):
 def test_draft_lifecycle(owner, lead):
     draft = generate(owner, lead).json()["draft"]
     assert draft["generated_by"] == "demo"
-    assert "Sarah Chen" in draft["body"] and "Website redesign" in draft["subject"]
+    assert "Sarah," in draft["body"] and "Website redesign" in draft["subject"]
     assert generate(owner, lead).json()["duplicate"]
     path = f"/api/drafts/{draft['id']}"
     assert owner.post(path + "/mark-sent").status_code == 409
