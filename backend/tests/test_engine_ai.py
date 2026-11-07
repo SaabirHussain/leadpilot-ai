@@ -210,3 +210,27 @@ def test_demo_natural_lists_and_catering(context):
     assert "collection time" in body and "mobile" not in body
     assert body.endswith(context["business"]["signature"])
     assert warnings_for(body) == []
+
+
+def test_demo_bakery_accessibility(context):
+    context["lead"].update(name="Jamie Lee", company="", service_requested="Website design",
+                           inquiry_message="I run a bakery and need an accessible website for customers using screen readers.")
+    context["tone"] = "friendly"
+    body = generate(context)["body"]
+    assert "your bakery" in body and "accessible website" in body
+    assert "accessibility barriers" in body
+    assert warnings_for(body) == []
+    assert body.endswith(context["business"]["signature"])
+
+
+@pytest.mark.parametrize("inquiry,phrase", [
+    ("Customers need appointments", "browsing to booking"),
+    ("Improve loading time and speed", "loading performance"),
+    ("Help customers find us on Google", "find in search"),
+    ("We need branding and a logo", "visual identity"),
+    ("We have content and photos ready", "useful photos"),
+    ("We need hosting and a domain", "hosting and domain"),
+])
+def test_demo_additional_inquiry_topics(context, inquiry, phrase):
+    context["lead"].update(service_requested="Website design", inquiry_message=inquiry)
+    assert phrase in generate(context)["body"]

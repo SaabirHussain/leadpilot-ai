@@ -1,5 +1,52 @@
 # Release 1.0.0 test results
 
+## Mobile navigation and demo-personalization fixes
+
+Customer archive: `distribution/dist/LeadPilot-AI-v1.0.0.zip`, **74 files,
+470,768 bytes**. Marketing assets remain excluded.
+
+```text
+SHA256: 3cf2b1c5fcef502949f81f5ec1ab976d2cdd8246a45611ff8c3b01b8ad1ce500
+
+pytest -q backend/tests
+47 passed, 1 skipped, 1 warning in 8.99s
+
+ruff check backend scripts/launch.py
+All checks passed!
+ruff check marketing/video/render.py
+All checks passed!
+
+npm run build (distribution builder)
+✓ 1599 modules transformed.
+✓ built in 1.73s
+
+npm run lint
+> eslint .
+(exit 0, no errors)
+
+E2E_BASE_URL=http://127.0.0.1:8017 npm run test:e2e
+1 passed (21.4s)
+```
+
+Fresh extraction: `/home/ubuntu/lp-drawer-native-q6fpvsvr`, launched with
+`PORT=8017 LEADPILOT_NO_BROWSER=1 sh scripts/start.sh`. Health returned
+`{"ok":true,"version":"1.0.0"}`. The complete E2E smoke ran against this
+isolated native installation, including the new 390px current-route Leads
+drawer-close assertion. Screenshots: `/home/ubuntu/lp-drawer-shots/`.
+
+The demo provider now recognizes accessibility, appointments, speed, Google,
+branding, content/photos, hosting/domain, and several fixed business types.
+Existing empty/unmatched and injection tests remain covered. Comparing old and
+new generated Sarah/Emma drafts in friendly and concise tones found identical
+output, so the videos were deliberately not re-rendered. No new manual visual
+review was performed. Docker, Windows, macOS, Safari and paid AI were not retested.
+The optional live-AI test remains skipped; the warning is the existing
+Starlette/AnyIO deprecation. npm still reports seven moderate vulnerabilities.
+
+The archive was built before this report update; the final SHA is recorded only
+in the repository report to avoid a self-referential checksum. Earlier results
+below are historical.
+
 ## Final marketing refresh and native package verification
 
 Final archive: `distribution/dist/LeadPilot-AI-v1.0.0.zip`, **74 files,

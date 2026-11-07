@@ -187,5 +187,10 @@ test("fresh workspace → thoughtful draft → follow-up, themes and mobile", as
     .click();
   await expect(page.getByTestId("mobile-leads")).toBeVisible();
   await expect(page.getByTestId("mobile-leads")).toContainText("Sarah Chen");
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page.getByRole("dialog").getByRole("link", { name: "Leads", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/leads$/);
+  await expect(page.getByTestId("mobile-leads")).toBeVisible();
   expect(errors).toEqual([]);
 });

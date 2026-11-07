@@ -164,7 +164,7 @@ export default function App() {
       </div>
       <nav>
         {navigation.map(([path, name, Icon]) => (
-          <NavLink key={path} to={path} end={path === "/"}>
+          <NavLink key={path} to={path} end={path === "/"} onClick={() => setDrawer(false)}>
             <Icon size={19} />
             {name}
             {name === "Reminders" && <span className="nav-dot" />}

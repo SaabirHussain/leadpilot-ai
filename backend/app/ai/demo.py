@@ -32,18 +32,53 @@ TOPICS = [
         r"maintenance|care",
     ),
     (
-        r"booking|schedule|timetable|classes",
+        r"booking|appointments?|reservations?|schedule|timetable|classes",
         "a clearer path from browsing to booking",
         "Which booking tool would you like to keep using?",
         "Sketching the path from the class or service page to booking can highlight confusing steps.",
         r"redesign|website design",
     ),
     (
-        r"seo|search|audit",
+        r"seo|search|audit|google",
         "making relevant pages easier to find in search",
         "Which pages or services would you most like customers to find?",
         "A list of priority pages and access to existing search reports can guide an SEO discussion.",
         r"seo|search",
+    ),
+    (
+        r"accessib|screen reader|keyboard navigation|wcag",
+        "a more accessible website that is easier for everyone to use",
+        "Which accessibility barriers have customers reported, and are there particular pages to prioritize?",
+        "Reviewing keyboard navigation, text contrast, and image descriptions can help identify accessibility priorities.",
+        r"accessib|redesign|website design",
+    ),
+    (
+        r"speed|performance|load(?:ing)? time|fast(?:er)? website",
+        "improved website speed and loading performance",
+        "Which pages or tasks feel slow, and on which devices?",
+        "Checking the most-used pages and their image sizes can help focus a performance review.",
+        r"performance|mobile|redesign|website design",
+    ),
+    (
+        r"brand|logo|visual identity",
+        "a consistent visual identity for your website",
+        "Do you have existing brand guidelines or a logo you would like to keep?",
+        "Gathering existing logos, colors, and examples can help clarify the visual direction.",
+        r"brand|design|redesign",
+    ),
+    (
+        r"content|photos?|photograph|copywriting",
+        "clear website content with useful photos",
+        "Which text and photos are ready, and what still needs creating?",
+        "An inventory of existing text and photos can help plan the content work.",
+        r"content|design|redesign",
+    ),
+    (
+        r"hosting|domain|dns",
+        "a clear plan for your website hosting and domain",
+        "Who currently manages your hosting and domain, and what would you like to keep?",
+        "Confirming domain ownership and hosting access is a useful first planning step.",
+        r"host|maintenance|care|website design",
     ),
 ]
 
@@ -97,6 +132,15 @@ def generate_demo(context):
         else f"We can discuss whether {business['business_name']} is a good fit."
     )
     company = f" for {lead['company']}" if lead.get("company") else ""
+    business_types = [
+        (r"\bbakery\b", "bakery"), (r"\brestaurant\b", "restaurant"),
+        (r"\bdental|\bdentist", "dental practice"), (r"\bsalon\b", "salon"),
+        (r"\bcafe\b|\bcafé\b", "café"), (r"\byoga\b", "yoga studio"),
+        (r"\bshop\b", "shop"),
+    ]
+    business_type = next((label for pattern, label in business_types if re.search(pattern, text, re.I)), None)
+    if business_type and business_type not in lead.get("company", "").lower():
+        company += f" (your {business_type})" if company else f" for your {business_type}"
     tone = context["tone"]
     step = context.get("followup_step") or 1
     if context["kind"] == "initial":
