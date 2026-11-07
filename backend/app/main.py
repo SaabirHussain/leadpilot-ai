@@ -19,12 +19,12 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 from pydantic import ValidationError
-from sqlalchemy import create_engine, delete, event, or_, select
+from sqlalchemy import create_engine, delete, event, func, or_, select
 from sqlalchemy.orm import sessionmaker
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import ai
-from .followups import TERMINAL, cancel_pending, contacted, sweep
+from .followups import TERMINAL, calculate_due, cancel_pending, contacted, sweep
 from .models import (
     Activity,
     Base,
@@ -297,7 +297,7 @@ def create_app(data_dir=None, background=None):
         db.commit()
         return settings_get(db)
 
-    def ai_call(db, lead, kind, tone):
+    def ai_call(db, lead, kind, tone, followup_step=None):
         settings = db.get(BusinessSettings, 1)
         context = {
             "lead": {key: getattr(lead, key) for key in CSV_FIELDS if key != "status"},
@@ -307,6 +307,7 @@ def create_app(data_dir=None, background=None):
             },
             "kind": kind,
             "tone": tone,
+            "followup_step": followup_step,
         }
         try:
             return ai.generate(
@@ -556,7 +557,7 @@ def create_app(data_dir=None, background=None):
             previous.status = "discarded"
         settings = db.get(BusinessSettings, 1)
         tone = payload.tone or settings.tone
-        result = ai_call(db, lead, kind, tone)
+        result = ai_call(db, lead, kind, tone, followup.step if followup else None)
         draft = Draft(
             lead_id=lead.id,
             followup_id=followup_id,
@@ -723,31 +724,77 @@ def create_app(data_dir=None, background=None):
         settings = db.get(BusinessSettings, 1)
         for key, value in seed["settings"].items():
             setattr(settings, key, value)
-        for index, row in enumerate(seed["leads"]):
-            lead = add_lead(db, LeadInput(**row), "demo", True)
-            if row["status"] == "contacted":
-                due = now() + timedelta(days=-2 if index == 1 else 0)
+        anchor = now()
+        for row in seed["leads"]:
+            timeline = row["timeline"]
+            payload = {key: value for key, value in row.items() if key != "timeline"}
+            lead = add_lead(db, LeadInput(**{**payload, "status": "new"}), "demo", True)
+            lead.created_at = anchor - timedelta(hours=timeline["created_hours_ago"])
+            lead.status = payload["status"]
+            for item in db.scalars(select(Activity).where(Activity.lead_id == lead.id)):
+                item.created_at = lead.created_at
+            db.add(
+                Activity(
+                    lead_id=lead.id,
+                    type="demo_note",
+                    message="Fictional demo inquiry received and reviewed",
+                    created_at=lead.created_at + timedelta(minutes=5),
+                )
+            )
+            if "contacted_hours_ago" in timeline:
+                lead.last_contacted_at = anchor - timedelta(hours=timeline["contacted_hours_ago"])
+                db.add(
+                    Activity(
+                        lead_id=lead.id,
+                        type="contacted",
+                        message="Demo: owner recorded a personally sent reply",
+                        created_at=lead.last_contacted_at,
+                    )
+                )
+                lead.next_follow_up_at = None
+            if "due_days_offset" in timeline:
+                due = calculate_due(
+                    anchor, timeline["due_days_offset"], settings.timezone, settings.send_hour_local
+                )
                 lead.next_follow_up_at = due
-                for item in db.scalars(select(FollowUp).where(FollowUp.lead_id == lead.id)):
-                    item.due_at = due
+                step = timeline["step"]
+                for previous_step in range(1, step):
+                    db.add(
+                        FollowUp(
+                            lead_id=lead.id,
+                            step=previous_step,
+                            due_at=lead.last_contacted_at - timedelta(days=1),
+                            status="done",
+                        )
+                    )
+                db.add(FollowUp(lead_id=lead.id, step=step, due_at=due))
+            if "status_hours_ago" in timeline:
+                db.add(
+                    Activity(
+                        lead_id=lead.id,
+                        type="status",
+                        message=f"Demo: status changed to {lead.status}",
+                        created_at=anchor - timedelta(hours=timeline["status_hours_ago"]),
+                    )
+                )
         db.commit()
         sweep(db)
         return {"loaded": True}
 
     @app.post("/api/demo/simulate-inquiry", status_code=201)
     def simulate(db=Depends(db_session)):
+        seed = json.loads((Path(__file__).resolve().parents[2] / "demo/seed.json").read_text())
+        count = db.scalar(
+            select(func.count()).select_from(Activity).where(Activity.type == "demo_simulated")
+        )
+        row = seed["simulated_inquiries"][count % len(seed["simulated_inquiries"])]
         lead = add_lead(
             db,
-            LeadInput(
-                name="Alex Morgan",
-                company="Fictional Maple Bakery",
-                email=f"alex.{secrets.token_hex(3)}@example.com",
-                service_requested="Website design",
-                inquiry_message="I'd like to discuss a new website for our fictional bakery.",
-            ),
+            LeadInput(**row),
             "demo",
             True,
         )
+        activity(db, lead.id, "demo_simulated", "Fictional website inquiry simulated")
         db.commit()
         return serialize(lead)
 

@@ -228,6 +228,52 @@ def test_demo(owner, lead):
     assert owner.get("/api/leads").json()["total"] == 1
 
 
+def test_rich_demo_history_and_rotation(owner):
+    from datetime import datetime, timezone
+    from zoneinfo import ZoneInfo
+
+    owner.post("/api/demo/load")
+    dashboard = owner.get("/api/dashboard").json()
+    assert dashboard["counts_by_status"]["new"] == 2
+    assert all(dashboard["counts_by_status"][status] for status in ["replied", "won", "lost"])
+    reminders = owner.get("/api/reminders").json()
+    assert reminders["overdue"] and reminders["today"] and reminders["upcoming"]
+    local_today = datetime.now(timezone.utc).astimezone(ZoneInfo("America/Toronto")).date()
+    for lead in owner.get("/api/leads").json()["items"]:
+        assert lead["is_demo"] and lead["email"].endswith("@example.com")
+        assert "555-01" in lead["phone"] and "fictional" in lead["company"]
+        assert len(lead["inquiry_message"].split(". ")) >= 2 and lead["notes"]
+        detail = owner.get(f"/api/leads/{lead['id']}").json()
+        assert len(detail["activity"]) >= 2
+        assert detail["created_at"] < detail["activity"][0]["created_at"]
+        if lead["status"] != "new":
+            assert lead["created_at"] < lead["last_contacted_at"]
+        if lead["status"] in {"won", "lost", "replied"}:
+            assert lead["next_follow_up_at"] is None
+    olivia = next(lead for lead in reminders["today"] if lead["name"] == "Olivia Taylor")
+    assert (
+        datetime.fromisoformat(olivia["next_follow_up_at"].replace("Z", "+00:00"))
+        .astimezone(ZoneInfo("America/Toronto"))
+        .date()
+        == local_today
+    )
+    simulated = [owner.post("/api/demo/simulate-inquiry").json() for _ in range(4)]
+    assert len({lead["inquiry_message"] for lead in simulated[:3]}) == 3
+    assert simulated[0]["name"] == simulated[3]["name"]
+    assert all(lead["is_demo"] and lead["source"] == "demo" for lead in simulated)
+
+
+def test_demo_followup_step_context(owner):
+    owner.post("/api/demo/load")
+    michael = owner.get("/api/leads?search=Michael").json()["items"][0]
+    draft = owner.post(
+        f"/api/leads/{michael['id']}/drafts/generate", json={"tone": "friendly"}
+    ).json()["draft"]
+    assert draft["generated_by"] == "demo"
+    assert "planning idea" in draft["subject"]
+    assert "address, hours and service area" in draft["body"]
+
+
 def test_sweep_idempotent(owner, lead):
     owner.post(f"/api/leads/{lead['id']}/status", json={"status": "contacted"})
     with owner.app.state.sessions.begin() as db:

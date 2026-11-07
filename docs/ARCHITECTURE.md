@@ -40,5 +40,12 @@ or upstream error bodies. JSON export includes leads, drafts, revisions, follow-
 activity; CSV exports leads and prefixes spreadsheet formula triggers. Full reset removes
 owner/settings and file-stored AI key; environment overrides remain configured externally.
 
+Demo seed timelines are relative to load time, with due dates set at the business-local send
+hour. The fictional dataset includes initial replies, overdue/today/upcoming follow-ups and
+closed leads with dated activity. Simulated inquiries rotate through seed scenarios, using
+persisted simulation activities to retain the rotation across restarts. Demo drafts use fixed
+topic snippets and matching configured services, three tones and step-specific follow-ups;
+they do not interpret arbitrary instructions in lead text or claim to have inspected a site.
+
 No frontend, deployment image, n8n workflow, Gmail transport, marketing assets or commercial
 license is delivered in this backend milestone. This is not an autonomous outreach system.
