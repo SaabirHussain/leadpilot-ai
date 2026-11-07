@@ -12,7 +12,8 @@ the database; future incompatible schema changes will need an explicit migration
   contact. DST folds use the first occurrence; gaps round-trip forward. Dates are stored
   as naive UTC and exposed with a `Z` suffix.
 - `ai/`: deterministic demo templates and synchronous HTTP adapters for OpenAI-compatible
-  and Anthropic Messages APIs. Provider calls time out at 30 seconds. Business context is
+  and Anthropic Messages APIs. Provider reads time out at 120 seconds (10 seconds to connect),
+  allowing slower local CPU models to respond. Business context is
   trusted system data; lead fields appear only in an HTML-escaped, untrusted user block.
   Heuristic output warnings supplement mandatory human review, not a security guarantee.
 - `main.py`: session authentication, CSV ingestion, API, privacy tools, fictional demo data,

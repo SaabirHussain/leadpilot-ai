@@ -62,7 +62,7 @@ Empty key clears the file key; environment key always wins. Token hashes never a
 | POST | /api/drafts/{id}/discard | No body → discarded Draft |
 | GET | /api/reminders | `{overdue:Lead[],today:Lead[],upcoming:Lead[]}` (next seven days) |
 | GET | /api/dashboard | `{counts_by_status:{new:0,...},outstanding_followups,overdue_count,recent_activity:[],leads_needing_attention:Lead[]}` |
-| GET | /api/activity | Most recent 100 Activity rows |
+| GET | /api/activity | Most recent 100 Activity rows, with `lead_name` (string or null); dashboard `recent_activity` includes it too |
 | GET | /api/export | `format=json|csv`; JSON `{leads:[],drafts:[],activity:[],followups:[],revisions:[]}` or CSV lead download |
 | DELETE | /api/data | JSON `{confirm:"DELETE ALL DATA"}`; optional `include_settings=true` also removes account/settings/file key → `{deleted:true,setup_required:boolean}` |
 | POST | /api/demo/load | No body; fictional settings/leads → `{loaded:boolean,message?:string}`; idempotent |

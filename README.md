@@ -45,6 +45,8 @@ The initial release targets one local owner, one server process.
 
 ## Checks
 
+For an optional free, local AI provider, see [Ollama setup](docs/LOCAL_AI.md).
+
 ```sh
 cd backend
 ../.venv/bin/pytest -q

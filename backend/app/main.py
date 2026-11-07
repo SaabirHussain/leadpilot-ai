@@ -655,8 +655,13 @@ def create_app(data_dir=None, background=None):
     @app.get("/api/activity")
     def activity_list(db=Depends(db_session)):
         return [
-            serialize(item)
-            for item in db.scalars(select(Activity).order_by(Activity.id.desc()).limit(100))
+            {**serialize(item), "lead_name": lead_name}
+            for item, lead_name in db.execute(
+                select(Activity, Lead.name)
+                .outerjoin(Lead, Activity.lead_id == Lead.id)
+                .order_by(Activity.id.desc())
+                .limit(100)
+            )
         ]
 
     @app.get("/api/dashboard")

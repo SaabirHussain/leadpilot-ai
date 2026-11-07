@@ -9,6 +9,23 @@ from app.followups import calculate_due
 
 
 @pytest.mark.parametrize(
+    "raw",
+    [
+        '```json\n{"subject":"Hi", "body":"Hello\\n\\nSarah"}\n```',
+        'Here is a draft: {"subject":"Hi", "body":"Hello\\n\\nSarah"} Done. {extra}',
+        '{} {"subject":"Hi", "body":"Hello\\n\\nSarah"}',
+    ],
+)
+def test_parse_wrapped_json(raw):
+    assert parse_result(raw) == {"subject": "Hi", "body": "Hello\n\nSarah"}
+
+
+@pytest.mark.parametrize("raw", ["", "not JSON", '{"subject": 1, "body": []}', None])
+def test_parse_fallback(raw):
+    assert parse_result(raw) == {"subject": "Following up on your inquiry", "body": str(raw)}
+
+
+@pytest.mark.parametrize(
     "contact,days,hour,expected",
     [
         (datetime(2025, 3, 8, 17), 1, 9, datetime(2025, 3, 9, 13)),

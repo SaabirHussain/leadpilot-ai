@@ -70,6 +70,11 @@ test("fresh workspace → thoughtful draft → follow-up, themes and mobile", as
   await page.getByTestId("load-demo").click();
   await expect(page.getByTestId("overdue-count")).toHaveText(/[1-9]/);
   await capture(page, "07-overview");
+  await expect(page.locator(".feed-row").filter({ hasText: "Michael Brown" }).first()).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  expect(Math.abs(await page.locator(".sidebar-content").evaluate(el => el.getBoundingClientRect().top))).toBeLessThan(1);
+  await page.screenshot({path: `${shots}/sidebar-scrolled-desktop.png`});
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.getByRole("link", { name: "Leads", exact: true }).click();
   await expect(
     page.getByRole("link", { name: /Sarah Chen/ }).first(),
@@ -119,11 +124,13 @@ test("fresh workspace → thoughtful draft → follow-up, themes and mobile", as
     .locator("section")
     .filter({ has: page.getByRole("heading", { name: /Upcoming 7 days/ }) });
   await expect(upcoming).toContainText("Sarah Chen");
+  await expect(upcoming.locator(".reminder-row").filter({hasText: "Sarah Chen"}).locator(".avatar")).toHaveText("SC");
   await capture(page, "15-reminders");
   await page.getByRole("link", { name: "Activity", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Activity", exact: true }),
   ).toBeVisible();
+  await expect(page.locator(".feed-row").filter({ hasText: "Sarah Chen" }).first()).toBeVisible();
   await capture(page, "16-activity");
   await page.getByRole("link", { name: "Settings", exact: true }).click();
   await expect(
@@ -155,7 +162,7 @@ test("fresh workspace → thoughtful draft → follow-up, themes and mobile", as
   await expect(page.getByTestId("toast")).toContainText(
     "New inquiry from Emma Rivera",
   );
-  await expect(page.getByRole("link", { name: /Emma Rivera/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Emma Rivera/ }).first()).toBeVisible();
   await page.getByTestId("theme-toggle").click();
   await expect(page.locator("html")).toHaveClass(/dark/);
   await page.setViewportSize({ width: 390, height: 844 });

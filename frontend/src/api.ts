@@ -18,6 +18,7 @@ export type Lead = {
   followups?: Followup[];
 };
 export type Activity = {
+  lead_name?: string | null;
   id: number;
   lead_id: number | null;
   type: string;

@@ -44,13 +44,15 @@ def warnings_for(text):
 
 
 def parse_result(raw):
-    try:
-        start, end = raw.index("{"), raw.rindex("}") + 1
-        data = json.loads(raw[start:end])
-        if isinstance(data.get("subject"), str) and isinstance(data.get("body"), str):
-            return {"subject": data["subject"][:1000], "body": data["body"][:30000]}
-    except (ValueError, TypeError, AttributeError):
-        pass
+    if isinstance(raw, str):
+        decoder = json.JSONDecoder()
+        for match in re.finditer(r"\{", raw):
+            try:
+                data, _ = decoder.raw_decode(raw[match.start() :])
+                if isinstance(data.get("subject"), str) and isinstance(data.get("body"), str):
+                    return {"subject": data["subject"][:1000], "body": data["body"][:30000]}
+            except (ValueError, TypeError, AttributeError):
+                continue
     return {"subject": "Following up on your inquiry", "body": str(raw)[:30000]}
 
 
@@ -76,7 +78,7 @@ def generate(context, provider="demo", base_url="", model="", api_key="", transp
             headers["Authorization"] = f"Bearer {api_key}"
         payload = {"model": model, "messages": prompt, "max_tokens": 700}
     try:
-        with httpx.Client(timeout=30, transport=transport) as client:
+        with httpx.Client(timeout=httpx.Timeout(120, connect=10), transport=transport) as client:
             response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             data = response.json()

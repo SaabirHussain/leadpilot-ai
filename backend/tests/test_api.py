@@ -76,6 +76,8 @@ def test_leads(owner, lead):
     assert owner.patch(path, json={"notes": "Updated"}).json()["notes"] == "Updated"
     assert owner.patch(path, json={"email": "bad"}).status_code == 422
     assert owner.get(path).json()["activity"]
+    assert owner.get("/api/activity").json()[0]["lead_name"] == "Sarah Chen"
+    assert owner.get("/api/dashboard").json()["recent_activity"][0]["lead_name"] == "Sarah Chen"
     assert owner.delete(path).json()["deleted"]
     assert owner.get(path).status_code == 404
 

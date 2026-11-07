@@ -230,7 +230,7 @@ export default function App() {
         </>
       ) : (
         <div className="shell">
-          <aside className="sidebar">{nav}</aside>
+          <aside className="sidebar"><div className="sidebar-content">{nav}</div></aside>
           <div className="workspace">
             <header className="topbar">
               <button
@@ -615,7 +615,7 @@ export function Feed({ items }: { items: Activity[] }) {
             )}
           </span>
           <div>
-            <p>{item.message}</p>
+            <p>{item.lead_name && <><Link to={`/leads/${item.lead_id}`}>{item.lead_name}</Link> · </>}{item.message}</p>
             <small>
               {date(item.created_at, settings.timezone)}
               {item.lead_id && (
@@ -772,7 +772,7 @@ function ReminderRow({
   return (
     <div className="reminder-row">
       <Link className="lead-identity" to={`/leads/${lead.id}`}>
-        <span className="avatar">{lead.name[0]}</span>
+        <span className="avatar">{lead.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join("")}</span>
         <span>
           <strong>{lead.name}</strong>
           <small>
